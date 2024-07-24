@@ -1,4 +1,8 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -16,8 +20,12 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    int pid = 0;
+    pid = system(cmd);
+    if(pid == -1)
+        return false;
+    else 
+        return true;
 }
 
 /**
@@ -36,6 +44,9 @@ bool do_system(const char *cmd)
 
 bool do_exec(int count, ...)
 {
+    int status;
+    bool rc;
+    pid_t pid;
     va_list args;
     va_start(args, count);
     char * command[count+1];
@@ -45,10 +56,8 @@ bool do_exec(int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
 
+    va_end(args);
 /*
  * TODO:
  *   Execute a system command by calling fork, execv(),
@@ -58,11 +67,38 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
-
-    va_end(args);
-
-    return true;
+    pid = fork();
+    /*Parent */
+    if (pid > 0) {
+        /*********************************** 
+        Taken some ideas and reference from below discussion :
+        https://www.coursera.org/learn/linux-system-programming-introduction-to-buildroot/discussions/weeks/2/threads/sbxnENx2Ee6JrRJ4ipALkw
+        ************************************/
+        if(waitpid(pid, &status, 0) == -1) {
+            return false;
+        }
+        /* python style */
+        if(WIFEXITED(status))
+            if(WEXITSTATUS(status) == 0)
+                rc = true;
+            else
+                rc = false;
+        else
+            rc = false;
+        return rc;
+    }
+    /*Child */
+    else if(pid == 0) {
+        execv(command[0], command);
+        exit(EXIT_FAILURE);
+    }
+    /*Error*/
+    else {
+        printf("error fork\n");
+        return false;
+    }
 }
+
 
 /**
 * @param outputfile - The full path to the file to write with command output.
@@ -71,6 +107,10 @@ bool do_exec(int count, ...)
 */
 bool do_exec_redirect(const char *outputfile, int count, ...)
 {
+    pid_t pid = 0;
+    int status;
+    int fd;
+    bool rc;
     va_list args;
     va_start(args, count);
     char * command[count+1];
@@ -80,10 +120,8 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
 
+    va_end(args);
 
 /*
  * TODO
@@ -91,9 +129,47 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   redirect standard out to a file specified by outputfile.
  *   The rest of the behaviour is same as do_exec()
  *
-*/
+*/  
+    fd = open(outputfile, O_RDWR | O_CREAT, 0666); 
+    if (fd < 0) { 
+        printf("error opening file\n");
+        return false;
+    }
+    pid = fork();
+    /*Parent*/
+    if(pid > 0) {     
+        /*********************************** 
+        Taken some ideas and reference from below discussion :
+        https://www.coursera.org/learn/linux-system-programming-introduction-to-buildroot/discussions/weeks/2/threads/sbxnENx2Ee6JrRJ4ipALkw
+        ************************************/
+        if(waitpid(pid, &status, 0) == -1) {
+            return false;
+        }
+        /* python style */
+        if(WIFEXITED(status))
+            if(WEXITSTATUS(status) == 0)
+                rc = true;
+            else
+                rc = false;
+        else
+            rc = false;
+        return rc;
+    }
+    /*child*/
+    else if(pid == 0) {
+        if(dup2(fd, 1) < 0) {
+            printf("error redirecting stdout\n");
+            exit(EXIT_FAILURE);
+        }
+        close(fd);
+        execv(command[0], command);
+        exit(EXIT_FAILURE);
+    }
+    /*Error*/
+    else {
+        printf("error\n");
+        close(fd);
+        return false;
+    }
 
-    va_end(args);
-
-    return true;
 }
