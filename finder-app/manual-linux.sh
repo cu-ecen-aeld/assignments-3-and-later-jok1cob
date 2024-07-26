@@ -30,7 +30,6 @@ cd ${TOOL_CHAIN_DIR}
 if [ ! -d "${TOOL_CHAIN_DIR}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu" ]; then
     #Download only if the repository does not exist.
     wget "https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz?rev=1cb9c51b94f54940bdcccd791451cec3&hash=B380A59EA3DC5FDC0448CA6472BF6B512706F8EC"
-    mv gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz?rev=1cb9c51b94f54940bdcccd791451cec3 gcc-arm-10.3-2021.07-x86_64-aarch64-linux-gnu.tar.xz
     tar -xJf gcc-arm-10.3-2021.07-x86_64-aarch64-linux-gnu.tar.xz -C ${TOOL_CHAIN_DIR}
 fi
 
