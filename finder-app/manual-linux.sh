@@ -12,6 +12,7 @@ BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
 CROSS_COMPILE=aarch64-none-linux-gnu-
+TOOL_CHAIN_DIR=${OUTDIR}/arm-cross-compiler
 
 if [ $# -lt 1 ]
 then
@@ -22,6 +23,17 @@ else
 fi
 
 mkdir -p ${OUTDIR}
+
+#Download and extract toolchain for the Autotest to work
+mkdir -p ${TOOL_CHAIN_DIR}
+cd ${TOOL_CHAIN_DIR}
+if [ ! -d "${TOOL_CHAIN_DIR}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu" ]; then
+    #Download only if the repository does not exist.
+    wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.3-2021.07/binrel/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz?rev=1cb9c51b94f54940bdcccd791451cec3&hash=B380A59EA3DC5FDC0448CA6472BF6B512706F8EC
+    mv gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu.tar.xz?rev=1cb9c51b94f54940bdcccd791451cec3 gcc-arm-10.3-2021.07-x86_64-aarch64-linux-gnu.tar.xz
+    tar -xJf gcc-arm-10.3-2021.07-x86_64-aarch64-linux-gnu.tar.xz -C ${TOOL_CHAIN_DIR}
+fi
+
 
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/linux-stable" ]; then
@@ -86,11 +98,11 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
-cp -f ~/linux_coursera/arm-cross-compiler/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
-cp -f ~/linux_coursera/arm-cross-compiler/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
-cp -f ~/linux_coursera/arm-cross-compiler/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
+cp -f ${TOOL_CHAIN_DIR}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
+cp -f ${TOOL_CHAIN_DIR}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
+cp -f ${TOOL_CHAIN_DIR}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
 
-cp -f ~/linux_coursera/arm-cross-compiler/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
+cp -f ${TOOL_CHAIN_DIR}/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
 
 # TODO: Make device nodes
 cd ${OUTDIR}/rootfs
