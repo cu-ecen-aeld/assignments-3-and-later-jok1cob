@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 if [ $# -ne 2 ]
 then
     echo "Script expects 2 string arguments 1->path, 2->string to search" 
