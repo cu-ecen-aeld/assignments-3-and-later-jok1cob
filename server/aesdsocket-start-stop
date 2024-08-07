@@ -1,0 +1,15 @@
+#!/bin/sh
+
+case "$1" in
+  start)
+        start-stop-daemon -S aesdsocket -- -d
+        ;;
+   stop)
+        start-stop-daemon -K aesdsocket
+        ;;
+      *)
+        echo "Usage: "$1" {start|stop}"
+        exit 1
+esac
+
+exit 0
