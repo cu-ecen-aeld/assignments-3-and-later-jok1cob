@@ -1,7 +1,5 @@
-> '#' echo “hello_world” > /dev/faulty
-  command run from userspace whihch triggered below crash 
-> Unable to handle kernel NULL pointer dereference at virtual address 0000000000000000
-  Null pointer dereference is identified in crash log, since its run inside kernel space, the system is brought to reset
+$ echo “hello_world” > /dev/faulty
+Unable to handle kernel NULL pointer dereference at virtual address 0000000000000000
 Mem abort info:
   ESR = 0x96000045
   EC = 0x25: DABT (current EL), IL = 32 bits
@@ -46,3 +44,14 @@ Code: d2800001 d2800000 d503233f d50323bf (b900003f)
 
 Welcome to Buildroot
 buildroot login: 
+
+
+#jok1cob analysis of crash:
+
+> '#' echo “hello_world” > /dev/faulty
+
+  jok1cob : command run from userspace whihch triggered below crash 
+
+> Unable to handle kernel NULL pointer dereference at virtual address 0000000000000000
+
+  jok1cob : Null pointer dereference is identified in crash log, since its run inside kernel space, the system is brought to reset
